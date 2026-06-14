@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classroom Companion — Coordinator Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #070a13;
+    --surface:    #111827;
+    --surface2:   #1f2937;
+    --border:     #2d3748;
+    --text:       #f9fafb;
+    --text-muted: #9ca3af;
+    --blue:       #3b82f6;
+    --blue-glow:  rgba(59,130,246,0.15);
+    --green:      #10b981;
+    --green-glow: rgba(16,185,129,0.15);
+    --amber:      #f59e0b;
+    --red:        #ef4444;
+    --purple:     #8b5cf6;
+    --radius:     16px;
+  }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 10;
+  }
+  .header-logo { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+  .header-logo span { color: var(--blue); }
+  .header-coordinator { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Grid Layouts */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 768px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+  }
+  @media (max-width: 992px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 10px 30px -15px rgba(0,0,0,0.5);
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px -5px rgba(0,0,0,0.3);
+  }
+  .stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--text); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-value.green { color: var(--green); }
+
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+  h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  
+  textarea, input, select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    outline: none;
+    font-family: inherit;
+  }
+  textarea:focus, input:focus {
+    border-color: var(--blue);
+  }
+
+  button {
+    background: var(--blue);
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    width: 100%;
+  }
+  button:hover { background: #1d4ed8; }
+  button:active { transform: scale(0.98); }
+
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-linked { background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+  .badge-unlinked { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .badge-status { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+  th, td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  tr:last-child td { border-bottom: none; }
+  
+  .toast {
+    position: fixed; bottom: 32px; right: 32px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 24px;
+    font-size: 13px; z-index: 200;
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); color: var(--green); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">Classroom <span>Companion</span> — Admin</div>
+  <div style="display:flex; align-items:center; gap:16px;">
+    <select id="actor-switcher" onchange="switchActor(this.value)" style="margin-bottom:0; padding:6px 12px; width:auto; font-size:13px; height:auto; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:6px; cursor:pointer;">
+      <option value="">Switch Role...</option>
+      <option value="teacher:manoj">MANOJ M (Teacher)</option>
+      <option value="teacher:sharma">Ms. Sharma (Teacher)</option>
+      <option value="coordinator:mehta">Principal Mehta (Coordinator)</option>
+      <option value="student:maddy">Maddy (Student)</option>
+      <option value="student:rahul">Rahul Verma (Student)</option>
+      <option value="student:priya">Priya Singh (Student)</option>
+    </select>
+    <div class="header-coordinator" id="header-name">Loading...</div>
+  </div>
+</header>
+
+<div class="container">
+  
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Classes</div>
+      <div class="stat-value blue" id="stat-classes">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Teachers</div>
+      <div class="stat-value blue" id="stat-teachers">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Students</div>
+      <div class="stat-value blue" id="stat-students">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Telegram Linked</div>
+      <div class="stat-value green" id="stat-linked">—</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- LEFT: School Overview & Student Connection Auditor -->
+    <div>
+      <div class="card">
+        <h2>School Overview (Class Health)</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>Teachers</th>
+                <th>Students</th>
+                <th>Telegram Link Rate</th>
+                <th>Assignments</th>
+              </tr>
+            </thead>
+            <tbody id="classes-body">
+              <tr>
+                <td colspan="5" style="color:var(--text-muted)">Loading class directories...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Student Telegram Connection Registry</h2>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">
+          Auditing which students have not completed onboarding. Unlinked students can use their Invite Code to link.
+        </p>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Student Name</th>
+                <th>Telegram Status</th>
+                <th>Assignments (Active)</th>
+                <th>Blocked</th>
+                <th>Overdue</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="students-body">
+              <tr>
+                <td colspan="6" style="color:var(--text-muted)">Loading student registry...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Teacher Registry</h2>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">
+          Auditing teachers in the school and their Telegram connection status.
+        </p>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Teacher Name</th>
+                <th>Role</th>
+                <th>Telegram Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="teachers-body">
+              <tr>
+                <td colspan="4" style="color:var(--text-muted)">Loading teacher registry...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Admin Controls (Class Creation & Invites) -->
+    <div>
+      <div class="card">
+        <h2>Create Class</h2>
+        <label style="font-weight:600; font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Class Name</label>
+        <input type="text" id="new-class-name" placeholder="e.g. Class 10 - Science">
+        <button onclick="createClass()">Create Class</button>
+      </div>
+
+      <div class="card">
+        <h2>Generate Teacher Invite</h2>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">
+          Invites a teacher to join the school. Optionally tie them to a starting class.
+        </p>
+        <label style="font-weight:600; font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Select Class (Optional)</label>
+        <select id="invite-class-select">
+          <option value="">No specific class (General)</option>
+        </select>
+        <button onclick="generateTeacherInvite()" class="btn-warning">Generate Invite Link</button>
+        <div id="invite-link-output" style="margin-top:16px; word-break: break-all; font-size:12px; background:var(--bg); border:1px solid var(--border); padding:10px; border-radius:6px; display:none;">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API_BASE = 'http://localhost:3001/api/coordinator';
+  let USER_ID = localStorage.getItem('coordinator_id') || '';
+
+  window.addEventListener('load', async () => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('user')) {
+      USER_ID = params.get('user');
+      localStorage.setItem('coordinator_id', USER_ID);
+    }
+    if (!USER_ID) {
+      USER_ID = prompt('Enter Coordinator ID:') || '';
+      localStorage.setItem('coordinator_id', USER_ID);
+    }
+    
+    document.getElementById('header-name').textContent = `Admin/Coordinator: Loading...`;
+    await refreshDashboard();
+  });
+
+  function switchActor(val) {
+    if (!val) return;
+    const [role, id] = val.split(':');
+    if (role === 'student') {
+      location.href = `../student/index.html?user=${id}`;
+    } else if (role === 'coordinator') {
+      location.href = `../coordinator/index.html?user=${id}`;
+    } else {
+      location.href = `../teacher/index.html?user=${id}`;
+    }
+  }
+
+  async function fetchWithAuth(path, options = {}) {
+    const res = await fetch(API_BASE + path, {
+      ...options,
+      headers: {
+        ...options.headers,
+        'x-user-id': USER_ID
+      }
+    });
+    if (res.status === 403 || res.status === 401) {
+      document.body.innerHTML = `
+        <div style="max-width:500px; margin:100px auto; text-align:center; padding:40px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+          <h1 style="color:var(--red); font-size:36px; margin-bottom:20px; font-family:inherit;">⚠️ Access Denied</h1>
+          <p style="color:var(--text-muted); font-size:15px; margin-bottom:24px; font-family:inherit;">Only coordinators are authorized to access the Admin/Coordinator Portal.</p>
+          <button onclick="location.href='../teacher/index.html'" style="width:auto; background:var(--blue); color:white; font-weight:600; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;">Go to Teacher Dashboard</button>
+        </div>
+      `;
+      throw new Error('Access denied');
+    }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Request failed');
+    }
+    return res.json();
+  }
+
+  async function refreshDashboard() {
+    try {
+      // Load School Overview Stats & Classes
+      const schoolData = await fetchWithAuth('/school');
+      
+      // Update Header Profile
+      document.getElementById('header-name').textContent = `${schoolData.school.name} (Admin)`;
+
+      // Update Top stats cards
+      document.getElementById('stat-classes').textContent = schoolData.summary.totalClasses;
+      document.getElementById('stat-teachers').textContent = schoolData.summary.totalTeachers;
+      document.getElementById('stat-students').textContent = schoolData.summary.totalStudents;
+      document.getElementById('stat-linked').textContent = `${schoolData.summary.linkedStudents}/${schoolData.summary.totalStudents}`;
+
+      // Update Classes Health Table
+      const classesBody = document.getElementById('classes-body');
+      if (schoolData.classes && schoolData.classes.length > 0) {
+        classesBody.innerHTML = schoolData.classes.map(c => `
+          <tr>
+            <td><strong>${c.class.name}</strong></td>
+            <td>${c.teachers.join(', ') || '<em>None</em>'}</td>
+            <td>${c.studentCount} Students</td>
+            <td>${c.studentStats.linked} Linked / ${c.studentStats.unlinked} Unlinked</td>
+            <td>${c.assignmentCount} Assignments</td>
+          </tr>
+        `).join('');
+        
+        // Populate the dropdown select
+        const select = document.getElementById('invite-class-select');
+        select.innerHTML = '<option value="">No specific class (General)</option>' + 
+          schoolData.classes.map(c => `<option value="${c.class.id}">${c.class.name}</option>`).join('');
+      } else {
+        classesBody.innerHTML = `<tr><td colspan="5" style="color:var(--text-muted)">No classes found.</td></tr>`;
+      }
+
+      // Load Student Connection Registry details
+      const studentData = await fetchWithAuth('/students');
+      const studentsBody = document.getElementById('students-body');
+      
+      if (studentData.students && studentData.students.length > 0) {
+        studentsBody.innerHTML = studentData.students.map(s => {
+          const statusBadge = s.telegram_linked 
+            ? `<span class="badge badge-linked">✅ Linked</span>`
+            : `<span class="badge badge-unlinked">❌ Unlinked</span>`;
+            
+          return `
+            <tr>
+              <td><strong>${s.name}</strong></td>
+              <td>${statusBadge}</td>
+              <td>${s.total_assignments} assignments</td>
+              <td><span style="color:${s.blocked > 0 ? 'var(--amber)' : 'inherit'}">${s.blocked}</span></td>
+              <td><span style="color:${s.overdue > 0 ? 'var(--red)' : 'inherit'}">${s.overdue}</span></td>
+              <td>
+                <button onclick="deleteStudent('${s.id}')" style="background:var(--red); padding:5px 10px; font-size:11px; width:auto; font-weight:600; border-radius:6px; margin:0;">Delete</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        studentsBody.innerHTML = `<tr><td colspan="6" style="color:var(--text-muted)">No students enrolled.</td></tr>`;
+      }
+
+      // Load Teacher Registry details
+      const teachersBody = document.getElementById('teachers-body');
+      if (schoolData.teachers && schoolData.teachers.length > 0) {
+        teachersBody.innerHTML = schoolData.teachers.map(t => {
+          const statusBadge = t.telegramLinked 
+            ? `<span class="badge badge-linked">✅ Linked</span>`
+            : `<span class="badge badge-unlinked">❌ Unlinked</span>`;
+            
+          const isSelf = t.id === USER_ID;
+          const deleteBtn = isSelf 
+            ? `<span style="font-size:11px; color:var(--text-muted)">You (Admin)</span>`
+            : `<button onclick="deleteTeacher('${t.id}')" style="background:var(--red); padding:5px 10px; font-size:11px; width:auto; font-weight:600; border-radius:6px; margin:0;">Delete</button>`;
+
+          return `
+            <tr>
+              <td><strong>${t.name}</strong></td>
+              <td><span class="badge badge-status">${t.role}</span></td>
+              <td>${statusBadge}</td>
+              <td>${deleteBtn}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        teachersBody.innerHTML = `<tr><td colspan="4" style="color:var(--text-muted)">No teachers found.</td></tr>`;
+      }
+
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to load dashboard: ' + err.message, 'error');
+    }
+  }
+
+  async function createClass() {
+    const name = document.getElementById('new-class-name').value;
+    if (!name) return alert("Class name is required!");
+    try {
+      await fetchWithAuth('/classes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      showToast("Class created successfully!", "success");
+      document.getElementById('new-class-name').value = '';
+      await refreshDashboard();
+    } catch(err) {
+      alert("Error: " + err.message);
+    }
+  }
+
+  async function generateTeacherInvite() {
+    const classId = document.getElementById('invite-class-select').value;
+    try {
+      const data = await fetchWithAuth('/invite-teacher', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classId })
+      });
+      
+      const out = document.getElementById('invite-link-output');
+      out.style.display = 'block';
+      out.innerHTML = `
+        <strong>Code:</strong> <code style="color:var(--amber)">${data.invite.code}</code><br>
+        <a href="${data.deepLink}" target="_blank" style="color:var(--blue); text-decoration:none;">🔗 Join on Telegram</a>
+      `;
+      showToast("Invite link generated!", "success");
+    } catch(err) {
+      alert("Error: " + err.message);
+    }
+  }
+
+  async function deleteStudent(id) {
+    if (!confirm("Are you sure you want to completely delete this student? All their class mappings and assignment submissions will be deleted.")) return;
+    try {
+      await fetchWithAuth(`/students/${id}`, {
+        method: 'DELETE'
+      });
+      showToast("Student deleted successfully!", "success");
+      await refreshDashboard();
+    } catch(err) {
+      alert("Error: " + err.message);
+    }
+  }
+
+  async function deleteTeacher(id) {
+    if (!confirm("Are you sure you want to completely delete this teacher? All their class assignments will be unlinked.")) return;
+    try {
+      await fetchWithAuth(`/teachers/${id}`, {
+        method: 'DELETE'
+      });
+      showToast("Teacher deleted successfully!", "success");
+      await refreshDashboard();
+    } catch(err) {
+      alert("Error: " + err.message);
+    }
+  }
+
+  function showToast(message, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = message;
+    t.className = `toast show ${type}`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>

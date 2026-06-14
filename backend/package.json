@@ -1,0 +1,31 @@
+{
+  "name": "classroom-companion-backend",
+  "version": "1.0.0",
+  "description": "Classroom Companion - Telegram-first assignment tracking system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node scripts/seed.js",
+    "test": "node tests/run-tests.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.17.0",
+    "cors": "^2.8.6",
+    "date-fns": "^2.30.0",
+    "date-fns-tz": "^2.0.1",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2",
+    "morgan": "^1.11.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "node-telegram-bot-api": "^0.64.0",
+    "openai": "^6.42.0",
+    "sql.js": "^1.10.2",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

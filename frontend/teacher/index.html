@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classroom Companion — Teacher Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #0b0f19;
+    --surface:    #151d30;
+    --surface2:   #1e2942;
+    --border:     #2b3a5a;
+    --text:       #f3f4f6;
+    --text-muted: #9ca3af;
+    --blue:       #2563eb;
+    --blue-glow:  rgba(37,99,235,0.15);
+    --green:      #10b981;
+    --green-glow: rgba(16,185,129,0.15);
+    --amber:      #f59e0b;
+    --amber-glow: rgba(245,158,11,0.15);
+    --red:        #ef4444;
+    --purple:     #8b5cf6;
+    --radius:     12px;
+  }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: rgba(21, 29, 48, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 10;
+  }
+  .header-logo { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+  .header-logo span { color: var(--blue); }
+  .header-teacher { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1.9fr;
+    gap: 32px;
+  }
+
+  @media (max-width: 992px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 10px 30px -15px rgba(0,0,0,0.5);
+  }
+
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+  h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  
+  textarea, input, select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  textarea:focus, input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-glow);
+  }
+
+  button {
+    background: var(--blue);
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  button:hover { background: #1d4ed8; }
+  button:active { transform: scale(0.98); }
+  
+  .btn-warning { background: var(--amber); color: #0b0f19; }
+  .btn-warning:hover { background: #d97706; }
+  
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+
+  .list-item {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .list-item:hover {
+    background-color: rgba(255,255,255,0.02);
+  }
+  .list-item:last-child { border-bottom: none; }
+
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-assigned      { background: rgba(156,163,175,0.1); color: #9ca3af; border: 1px solid rgba(156,163,175,0.2); }
+  .badge-acknowledged  { background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+  .badge-in_progress   { background: rgba(139,92,246,0.1); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+  .badge-blocked       { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .badge-submitted     { background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+  .badge-completed     { background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+  .badge-needs_revision{ background: rgba(245,158,11,0.1); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+
+  .toast {
+    position: fixed; bottom: 32px; right: 32px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 24px;
+    font-size: 13px; z-index: 200;
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); color: var(--green); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">Classroom <span>Companion</span> — Teacher</div>
+  <div style="display:flex; align-items:center; gap:16px;">
+    <select id="actor-switcher" onchange="switchActor(this.value)" style="margin-bottom:0; padding:6px 12px; width:auto; font-size:13px; height:auto; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:6px; cursor:pointer;">
+      <option value="">Switch Role...</option>
+      <option value="teacher:manoj">MANOJ M (Teacher)</option>
+      <option value="teacher:sharma">Ms. Sharma (Teacher)</option>
+      <option value="coordinator:mehta">Principal Mehta (Coordinator)</option>
+      <option value="student:maddy">Maddy (Student)</option>
+      <option value="student:rahul">Rahul Verma (Student)</option>
+      <option value="student:priya">Priya Singh (Student)</option>
+    </select>
+    <div class="header-teacher" id="header-name">Loading Teacher Profile...</div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="grid">
+    <!-- LEFT: Create Work -->
+    <div class="card" style="height: fit-content;">
+      <h2>Create Assignment</h2>
+      <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">
+        Describe the task in natural language. The AI will extract the title, description, and due date.
+      </p>
+      
+      <label style="font-weight:600; font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Class ID</label>
+      <input type="text" id="class-id" placeholder="Enter target Class ID">
+      
+      <label style="font-weight:600; font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Instructions / Prompt</label>
+      <textarea id="assignment-nl" rows="4" placeholder="e.g. Essay on the solar system, 500 words, due next Friday by 6pm"></textarea>
+      
+      <button onclick="createAssignment()" style="width:100%;">Create & Distribute</button>
+
+      <hr style="border:none; border-top: 1px solid var(--border); margin:28px 0;">
+
+      <h2>Invite Students</h2>
+      <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">
+        Generate an invite code so new students can link their Telegram to this class.
+      </p>
+      <button onclick="generateStudentInvite()" style="width:100%; background:var(--purple); margin-bottom:16px; color:white; font-weight:600; border:none; padding:12px 20px; border-radius:8px; cursor:pointer;">Generate Student Invite Link</button>
+      <div id="student-invite-output" style="margin-top:16px; margin-bottom:16px; word-break: break-all; font-size:12px; background:var(--bg); border:1px solid var(--border); padding:10px; border-radius:6px; display:none;">
+      </div>
+
+      <hr style="border:none; border-top: 1px solid var(--border); margin:28px 0;">
+
+      <h2>Scheduler Automation</h2>
+      <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">
+        Manually trigger the reminder cycle to check student statuses and send Telegram reminders.
+      </p>
+      <button class="btn-warning" onclick="triggerReminders()" style="width:100%;">Run Reminder Loop</button>
+    </div>
+
+    <!-- RIGHT: Submissions List -->
+    <div class="card" id="tracker-panel">
+      <h2>Student Homework Tracker</h2>
+      <div id="submissions-list" style="margin-top:12px;">
+        <div style="color:var(--text-muted)">Loading tracking dashboard...</div>
+      </div>
+    </div>
+
+    <!-- DETAIL PANEL (Initially Hidden) -->
+    <div class="card" id="detail-panel" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 id="detail-title" style="margin-bottom:0;">Assignment Details</h2>
+        <button class="btn-secondary" onclick="hideDetail()" style="padding:6px 14px; font-size:12px;">Back to List</button>
+      </div>
+      <div id="detail-content"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let TEACHER_ID = localStorage.getItem('teacher_id') || '';
+  let activeAssignmentId = '';
+
+  function switchActor(val) {
+    if (!val) return;
+    const [role, id] = val.split(':');
+    if (role === 'student') {
+      location.href = `../student/index.html?user=${id}`;
+    } else if (role === 'coordinator') {
+      location.href = `../coordinator/index.html?user=${id}`;
+    } else {
+      location.href = `../teacher/index.html?user=${id}`;
+    }
+  }
+
+  window.addEventListener('load', async () => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('user')) {
+      TEACHER_ID = params.get('user');
+      localStorage.setItem('teacher_id', TEACHER_ID);
+    }
+    if (!TEACHER_ID) {
+      TEACHER_ID = prompt('Enter your Teacher ID:') || 'teacher-default';
+      localStorage.setItem('teacher_id', TEACHER_ID);
+    }
+    
+    document.getElementById('header-name').textContent = `Teacher: Loading... (${TEACHER_ID.substring(0,6)})`;
+    await loadTracker();
+  });
+
+  async function createAssignment() {
+    const text = document.getElementById('assignment-nl').value;
+    const cid = document.getElementById('class-id').value;
+    if (!text || !cid) return alert("Fill in Class ID and Instructions!");
+
+    const res = await fetch('http://localhost:3001/api/teacher/assignments', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'x-user-id': TEACHER_ID 
+      },
+      body: JSON.stringify({ raw_input: text, class_id: cid })
+    });
+    
+    if (res.ok) {
+      showToast("Assignment parsed and created successfully!", "success");
+      document.getElementById('assignment-nl').value = "";
+      await loadTracker();
+    } else {
+      alert("Failed to create assignment");
+    }
+  }
+
+  async function generateStudentInvite() {
+    const classId = document.getElementById('class-id').value;
+    if (!classId) return alert("Please specify a Class ID first!");
+    
+    try {
+      const res = await fetch('http://localhost:3001/api/teacher/invite', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'x-user-id': TEACHER_ID 
+        },
+        body: JSON.stringify({ classId, role: 'student', maxUses: 30 })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        const out = document.getElementById('student-invite-output');
+        out.style.display = 'block';
+        out.innerHTML = `
+          <strong>Student Code:</strong> <code style="color:var(--amber); font-weight:700;">${data.invite.code}</code><br><br>
+          <a href="${data.deepLink}" target="_blank" style="display:inline-block; background:var(--blue); color:white; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:12px;">🔗 Open Telegram & Link</a>
+        `;
+        showToast("Student invite code generated!", "success");
+      } else {
+        alert("Failed to generate invite code");
+      }
+    } catch(err) {
+      alert("Error: " + err.message);
+    }
+  }
+
+  async function triggerReminders() {
+    const res = await fetch('http://localhost:3001/api/teacher/remind', {
+      method: 'POST',
+      headers: { 'x-user-id': TEACHER_ID }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      showToast("Reminders checked and dispatched successfully!", "success");
+      await loadTracker();
+    }
+  }
+
+  async function loadTracker() {
+    try {
+      const res = await fetch('http://localhost:3001/api/teacher/dashboard', {
+        headers: { 'x-user-id': TEACHER_ID }
+      });
+      if (res.status === 403 || res.status === 401) {
+        document.body.innerHTML = `
+          <div style="max-width:500px; margin:100px auto; text-align:center; padding:40px; background:#151d30; border:1px solid #2b3a5a; border-radius:12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h1 style="color:#ef4444; font-size:36px; margin-bottom:20px; font-family:'Outfit',sans-serif;">⚠️ Access Denied</h1>
+            <p style="color:#9ca3af; font-size:15px; margin-bottom:24px; font-family:'Outfit',sans-serif;">Only teachers and coordinators are authorized to access the Teacher Dashboard.</p>
+            <button onclick="location.href='../student/index.html'" style="width:auto; background:#2563eb; color:white; font-weight:600; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;">Go to Student Portal</button>
+          </div>
+        `;
+        return;
+      }
+      if (!res.ok) return;
+      const data = await res.json();
+      
+      if (data.teacher && data.teacher.name) {
+        document.getElementById('header-name').textContent = `Teacher: ${data.teacher.name}`;
+      }
+
+      // Auto fill target class id if classes are available
+      if (data.dashboard && data.dashboard.length > 0 && !document.getElementById('class-id').value) {
+        document.getElementById('class-id').value = data.dashboard[0].class.id;
+      }
+
+      const list = document.getElementById('submissions-list');
+      let html = '';
+      
+      if (data.dashboard && data.dashboard.length > 0) {
+        data.dashboard.forEach(group => {
+          html += `<div style="margin-bottom:24px;">
+            <h3 style="border-bottom:1px solid var(--border); padding-bottom:8px; color:var(--blue)">🏫 ${group.class.name}</h3>`;
+            
+          if (group.assignments && group.assignments.length > 0) {
+            group.assignments.forEach(sub => {
+              html += `
+                <div class="list-item" onclick="selectAssignment('${sub.id}')">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:15px;">${sub.title}</strong>
+                      <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+                        Due: ${sub.due_at ? new Date(sub.due_at).toLocaleDateString() : 'TBD'} | ${sub.studentCount} Students
+                      </div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                      <span class="badge badge-submitted">${sub.submitted} Done</span>
+                      ${sub.blocked > 0 ? `<span class="badge badge-blocked">${sub.blocked} Blocked</span>` : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+            });
+          } else {
+            html += `<div style="color:var(--text-muted); font-style:italic; padding:12px 0;">No assignments created in this class.</div>`;
+          }
+          html += `</div>`;
+        });
+        list.innerHTML = html;
+      } else {
+        list.innerHTML = `<div style="color:var(--text-muted)">You are not assigned to any classes yet.</div>`;
+      }
+    } catch(e) {
+      console.error(e);
+      document.getElementById('submissions-list').innerHTML = `<div style="color:var(--red)">Failed to load tracker dashboard.</div>`;
+    }
+  }
+
+  async function selectAssignment(id) {
+    activeAssignmentId = id;
+    const res = await fetch(`http://localhost:3001/api/teacher/assignments/${id}`, {
+      headers: { 'x-user-id': TEACHER_ID }
+    });
+    if (!res.ok) return alert("Failed to load assignment details");
+    const data = await res.json();
+    
+    document.getElementById('tracker-panel').style.display = 'none';
+    document.getElementById('detail-panel').style.display = 'block';
+    
+    document.getElementById('detail-title').textContent = data.assignment.title;
+    
+    let html = `
+      <p style="color:var(--text-muted); margin-bottom:14px; font-size:14px;">${data.assignment.description}</p>
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">
+        📅 Deadline: ${data.assignment.due_at ? new Date(data.assignment.due_at).toLocaleString() : 'No deadline set'}
+      </div>
+      
+      ${data.summary ? `
+        <div style="background:rgba(37,99,235,0.06); border:1px solid var(--border); padding:16px; border-radius:var(--radius); margin-bottom:24px;">
+          <strong style="color:var(--blue); font-size:11px; display:block; margin-bottom:6px; letter-spacing:0.5px; text-transform:uppercase;">🤖 AI Helper Summary</strong>
+          <p style="font-size:13px; line-height:1.5; color:#cbd5e1;">${data.summary}</p>
+        </div>
+      ` : ''}
+      
+      <h3 style="font-size:14px; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:6px;">Students Progress</h3>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+    `;
+    
+    if (data.students && data.students.length > 0) {
+      data.students.forEach(s => {
+        html += `
+          <div style="background:var(--bg); border:1px solid var(--border); padding:16px; border-radius:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <strong style="font-size:14px;">${s.student_name}</strong>
+              <span class="badge badge-${s.status}">${s.status.replace('_', ' ')}</span>
+            </div>
+            
+            ${s.last_student_message ? `
+              <div style="font-size:13px; color:#9ca3af; margin-bottom:10px; padding-left:8px; border-left:2px solid var(--border);">
+                💬 Last message: <em>"${s.last_student_message}"</em>
+              </div>
+            ` : ''}
+            
+            ${s.submission_text || s.submission_file_name ? `
+              <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:12px; border-radius:6px; font-size:13px; margin-bottom:14px; color:#e5e7eb;">
+                <strong>Submission Text:</strong> ${s.submission_text || 'None'} 
+                ${s.submission_file_name ? `<div style="margin-top:6px; color:var(--blue);">📄 File Attachment: ${s.submission_file_name}</div>` : ''}
+              </div>
+            ` : ''}
+            
+            ${['submitted', 'needs_revision'].includes(s.status) ? `
+              <div style="margin-top:12px;">
+                <textarea id="feedback-${s.id}" rows="2" placeholder="Write feedback comment..." style="margin-bottom:10px; font-size:13px;"></textarea>
+                <div style="display:flex; gap:10px;">
+                  <button onclick="submitFeedback('${s.id}', false)" style="padding:6px 14px; font-size:12px; background:var(--green);">Accept & Complete</button>
+                  <button onclick="submitFeedback('${s.id}', true)" style="padding:6px 14px; font-size:12px; background:var(--amber); color:#0b0f19;">Request Revision</button>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+    } else {
+      html += `<div style="color:var(--text-muted)">No students assigned to this class.</div>`;
+    }
+    
+    html += `</div>`;
+    document.getElementById('detail-content').innerHTML = html;
+  }
+
+  function hideDetail() {
+    document.getElementById('tracker-panel').style.display = 'block';
+    document.getElementById('detail-panel').style.display = 'none';
+    loadTracker();
+  }
+
+  async function submitFeedback(saId, markAsNeedsRevision) {
+    const content = document.getElementById(`feedback-${saId}`).value;
+    if (!content) return alert("Please enter feedback!");
+    
+    const res = await fetch('http://localhost:3001/api/teacher/feedback', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'x-user-id': TEACHER_ID 
+      },
+      body: JSON.stringify({
+        studentAssignmentId: saId,
+        content,
+        markAsNeedsRevision
+      })
+    });
+    
+    if (res.ok) {
+      showToast("Feedback sent successfully!", "success");
+      await selectAssignment(activeAssignmentId);
+    } else {
+      alert("Failed to submit feedback");
+    }
+  }
+
+  function showToast(message, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = message;
+    t.className = `toast show ${type}`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
