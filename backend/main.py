@@ -46,9 +46,9 @@ async def startup_event():
     print("\n" + "="*50)
     print("      Classroom Companion Web Portals")
     print("="*50)
-    print("Coordinator Portal: http://localhost:3000/coordinator/index.html?user=mehta")
-    print("Teacher Portal:     http://localhost:3000/teacher/index.html?user=manoj")
-    print("Student Portal:     http://localhost:3000/student/index.html?user=maddy")
+    print("Coordinator Portal: http://localhost:5500/frontend/coordinator/index.html?user=mehta")
+    print("Teacher Portal:     http://localhost:5500/frontend/teacher/index.html?user=manoj")
+    print("Student Portal:     http://localhost:5500/frontend/student/index.html?user=maddy")
     print("="*50 + "\n")
 
 # Auth Helpers (Header dependencies)
