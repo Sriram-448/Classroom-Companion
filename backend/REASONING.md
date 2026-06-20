@@ -35,18 +35,18 @@ Student assignments transition through a strict state machine to prevent illegal
 
 ```
         assigned (Initial)
-           │
-           ├──➔ acknowledged ("got it")
-           │       │
-           │       ├──➔ in_progress ("working on it")
-           │               │
-           │               ├──➔ blocked ("I'm stuck") ──➔ in_progress
-           │               │
-           │               └──➔ submitted (homework uploaded)
-           │                       │
-           │                       ├──➔ needs_revision (requested by teacher) ──➔ submitted
-           │                       │
-           │                       └──➔ completed (graded/approved by teacher)
+           
+            acknowledged ("got it")
+                  
+                   in_progress ("working on it")
+                          
+                           blocked ("I'm stuck")  in_progress
+                          
+                           submitted (homework uploaded)
+                                  
+                                   needs_revision (requested by teacher)  submitted
+                                  
+                                   completed (graded/approved by teacher)
 ```
 *   **Same-State Updates**: Messages that don't trigger state changes (e.g. sending a general comment while remaining `assigned`) are written as updates without validation failures.
 *   **Terminal State**: Once an assignment is `completed`, progress updates are locked.

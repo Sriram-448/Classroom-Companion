@@ -1,0 +1,47 @@
+Classroom Companion — Codebase Walkthrough
+=========================================
+
+Here is how the system's code files are organized, what each file's job is, and how they work together in simple terms:
+
+
+1. THE BACKEND (The Engine)
+---------------------------
+
+* backend/main.py (The API Server/Traffic Controller)
+  - What it does: This is the main server file. It listens to any requests coming from the web dashboards (like teachers creating assignments or admins viewing stats).
+  - How it works: It acts like a traffic controller. When a web dashboard requests data, this file checks who is asking (using security checks), retrieves the information from the database file, and sends back the answers.
+
+* backend/services/db_service.py (The Filing Cabinet)
+  - What it does: This file handles all data storage and retrieval.
+  - How it works: It connects to the SQLite database file (classroom.db). It contains direct SQL instructions to create tables, save new assignments, link students, fetch logs, and write student submissions. If any other file needs database access, it asks this file to handle the file cabinets.
+
+* backend/services/bot_service.py (The Chatbot Operator)
+  - What it does: This file runs the Telegram chatbot.
+  - How it works: It connects to Telegram. When a student sends a message to the bot, this file receives it, asks the AI to interpret what the student meant, and updates their assignment status in the database. It also handles sending messages from the teacher back to the student.
+
+* backend/llm/llm_service.py (The Brains / Translator)
+  - What it does: This file interacts with Google's Gemini AI to make sense of typed messages.
+  - How it works:
+    - For Teachers: It takes plain-text sentences (like "Essay due next Friday") and translates them into structured variables (Title: "Essay", Date: "Friday's date").
+    - For Students: It reads student chat responses (like "I'm stuck") and translates them into status categories (Intent: "blocked").
+    - Fallback: If the internet fails or the AI is overloaded, it runs offline rules (heuristics) to calculate dates and extract titles so the server doesn't crash.
+
+* backend/jobs/scheduler.py (The Alarm Clock / Auto-Reminder)
+  - What it does: This file automates recurring tasks.
+  - How it works: It runs in the background. Every 30 minutes, it checks the database for assignments that are overdue, or students who have been silent, and uses the chatbot to automatically send friendly nudges on Telegram.
+
+
+2. THE FRONTEND (The Visual Portals)
+------------------------------------
+
+* frontend/teacher/index.html (The Teacher's Control Panel)
+  - What it does: The web dashboard for teachers.
+  - How it works: Displays a live list of assignments. It allows teachers to type homework descriptions, see a live checklist of which students are working/stuck/done, review submissions, and write feedback comments.
+
+* frontend/student/index.html (The Student's Checklist)
+  - What it does: The web portal for students (alternative to Telegram).
+  - How it works: Displays their personalized active and completed homework lists, showing deadlines and feedback from their teachers.
+
+* frontend/coordinator/index.html (The Principal's Dashboard)
+  - What it does: The admin dashboard.
+  - How it works: Provides a high-level view of classroom metrics, showing how many students have linked their Telegram, allowing the creation of new classes, and issuing invite codes to teachers.

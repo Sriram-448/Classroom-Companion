@@ -171,8 +171,8 @@
         Describe the task in natural language. The AI will extract the title, description, and due date.
       </p>
       
-      <label style="font-weight:600; font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Class ID</label>
-      <input type="text" id="class-id" placeholder="Enter target Class ID">
+      <label style="font-weight:600; font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Target Class</label>
+      <select id="class-id" style="background:var(--bg); border:1px solid var(--border); color:var(--text); padding:12px 16px; border-radius:8px; width:100%; margin-bottom:16px; outline:none; font-family:inherit; cursor:pointer;"></select>
       
       <label style="font-weight:600; font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Instructions / Prompt</label>
       <textarea id="assignment-nl" rows="4" placeholder="e.g. Essay on the solar system, 500 words, due next Friday by 6pm"></textarea>
@@ -293,7 +293,7 @@
         out.style.display = 'block';
         out.innerHTML = `
           <strong>Student Code:</strong> <code style="color:var(--amber); font-weight:700;">${data.invite.code}</code><br><br>
-          <a href="${data.deepLink}" target="_blank" style="display:inline-block; background:var(--blue); color:white; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:12px;">🔗 Open Telegram & Link</a>
+          <a href="${data.deepLink}" target="_blank" style="display:inline-block; background:var(--blue); color:white; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:12px;">[Link] Open Telegram & Link</a>
         `;
         showToast("Student invite code generated!", "success");
       } else {
@@ -324,7 +324,7 @@
       if (res.status === 403 || res.status === 401) {
         document.body.innerHTML = `
           <div style="max-width:500px; margin:100px auto; text-align:center; padding:40px; background:#151d30; border:1px solid #2b3a5a; border-radius:12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <h1 style="color:#ef4444; font-size:36px; margin-bottom:20px; font-family:'Outfit',sans-serif;">⚠️ Access Denied</h1>
+            <h1 style="color:#ef4444; font-size:36px; margin-bottom:20px; font-family:'Outfit',sans-serif;">[Warning]️ Access Denied</h1>
             <p style="color:#9ca3af; font-size:15px; margin-bottom:24px; font-family:'Outfit',sans-serif;">Only teachers and coordinators are authorized to access the Teacher Dashboard.</p>
             <button onclick="location.href='../student/index.html'" style="width:auto; background:#2563eb; color:white; font-weight:600; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;">Go to Student Portal</button>
           </div>
@@ -338,9 +338,16 @@
         document.getElementById('header-name').textContent = `Teacher: ${data.teacher.name}`;
       }
 
-      // Auto fill target class id if classes are available
-      if (data.dashboard && data.dashboard.length > 0 && !document.getElementById('class-id').value) {
-        document.getElementById('class-id').value = data.dashboard[0].class.id;
+      // Populate Class ID dropdown dynamically
+      const classSelect = document.getElementById('class-id');
+      const currentSelected = classSelect.value;
+      if (data.dashboard && data.dashboard.length > 0) {
+        classSelect.innerHTML = data.dashboard.map(group => 
+          `<option value="${group.class.id}">${group.class.name}</option>`
+        ).join('');
+        if (currentSelected) {
+          classSelect.value = currentSelected;
+        }
       }
 
       const list = document.getElementById('submissions-list');
@@ -349,7 +356,7 @@
       if (data.dashboard && data.dashboard.length > 0) {
         data.dashboard.forEach(group => {
           html += `<div style="margin-bottom:24px;">
-            <h3 style="border-bottom:1px solid var(--border); padding-bottom:8px; color:var(--blue)">🏫 ${group.class.name}</h3>`;
+            <h3 style="border-bottom:1px solid var(--border); padding-bottom:8px; color:var(--blue)"> ${group.class.name}</h3>`;
             
           if (group.assignments && group.assignments.length > 0) {
             group.assignments.forEach(sub => {
@@ -401,12 +408,12 @@
     let html = `
       <p style="color:var(--text-muted); margin-bottom:14px; font-size:14px;">${data.assignment.description}</p>
       <div style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">
-        📅 Deadline: ${data.assignment.due_at ? new Date(data.assignment.due_at).toLocaleString() : 'No deadline set'}
+        Due: Deadline: ${data.assignment.due_at ? new Date(data.assignment.due_at).toLocaleString() : 'No deadline set'}
       </div>
       
       ${data.summary ? `
         <div style="background:rgba(37,99,235,0.06); border:1px solid var(--border); padding:16px; border-radius:var(--radius); margin-bottom:24px;">
-          <strong style="color:var(--blue); font-size:11px; display:block; margin-bottom:6px; letter-spacing:0.5px; text-transform:uppercase;">🤖 AI Helper Summary</strong>
+          <strong style="color:var(--blue); font-size:11px; display:block; margin-bottom:6px; letter-spacing:0.5px; text-transform:uppercase;">AI Helper AI Helper Summary</strong>
           <p style="font-size:13px; line-height:1.5; color:#cbd5e1;">${data.summary}</p>
         </div>
       ` : ''}
@@ -426,14 +433,14 @@
             
             ${s.last_student_message ? `
               <div style="font-size:13px; color:#9ca3af; margin-bottom:10px; padding-left:8px; border-left:2px solid var(--border);">
-                💬 Last message: <em>"${s.last_student_message}"</em>
+                [Feedback] Last message: <em>"${s.last_student_message}"</em>
               </div>
             ` : ''}
             
             ${s.submission_text || s.submission_file_name ? `
               <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:12px; border-radius:6px; font-size:13px; margin-bottom:14px; color:#e5e7eb;">
                 <strong>Submission Text:</strong> ${s.submission_text || 'None'} 
-                ${s.submission_file_name ? `<div style="margin-top:6px; color:var(--blue);">📄 File Attachment: ${s.submission_file_name}</div>` : ''}
+                ${s.submission_file_name ? `<div style="margin-top:6px; color:var(--blue);"> File Attachment: ${s.submission_file_name}</div>` : ''}
               </div>
             ` : ''}
             

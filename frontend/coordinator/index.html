@@ -353,7 +353,7 @@
     if (res.status === 403 || res.status === 401) {
       document.body.innerHTML = `
         <div style="max-width:500px; margin:100px auto; text-align:center; padding:40px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-          <h1 style="color:var(--red); font-size:36px; margin-bottom:20px; font-family:inherit;">⚠️ Access Denied</h1>
+          <h1 style="color:var(--red); font-size:36px; margin-bottom:20px; font-family:inherit;">[Warning]️ Access Denied</h1>
           <p style="color:var(--text-muted); font-size:15px; margin-bottom:24px; font-family:inherit;">Only coordinators are authorized to access the Admin/Coordinator Portal.</p>
           <button onclick="location.href='../teacher/index.html'" style="width:auto; background:var(--blue); color:white; font-weight:600; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;">Go to Teacher Dashboard</button>
         </div>
@@ -409,8 +409,8 @@
       if (studentData.students && studentData.students.length > 0) {
         studentsBody.innerHTML = studentData.students.map(s => {
           const statusBadge = s.telegram_linked 
-            ? `<span class="badge badge-linked">✅ Linked</span>`
-            : `<span class="badge badge-unlinked">❌ Unlinked</span>`;
+            ? `<span class="badge badge-linked">[OK] Linked</span>`
+            : `<span class="badge badge-unlinked">[Error] Unlinked</span>`;
             
           return `
             <tr>
@@ -434,8 +434,8 @@
       if (schoolData.teachers && schoolData.teachers.length > 0) {
         teachersBody.innerHTML = schoolData.teachers.map(t => {
           const statusBadge = t.telegramLinked 
-            ? `<span class="badge badge-linked">✅ Linked</span>`
-            : `<span class="badge badge-unlinked">❌ Unlinked</span>`;
+            ? `<span class="badge badge-linked">[OK] Linked</span>`
+            : `<span class="badge badge-unlinked">[Error] Unlinked</span>`;
             
           const isSelf = t.id === USER_ID;
           const deleteBtn = isSelf 
@@ -491,7 +491,7 @@
       out.style.display = 'block';
       out.innerHTML = `
         <strong>Code:</strong> <code style="color:var(--amber)">${data.invite.code}</code><br>
-        <a href="${data.deepLink}" target="_blank" style="color:var(--blue); text-decoration:none;">🔗 Join on Telegram</a>
+        <a href="${data.deepLink}" target="_blank" style="color:var(--blue); text-decoration:none;">[Link] Join on Telegram</a>
       `;
       showToast("Invite link generated!", "success");
     } catch(err) {
