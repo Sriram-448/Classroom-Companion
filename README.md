@@ -6,40 +6,32 @@ Classroom Companion is an AI-powered assistant designed to manage school classes
 
 ## 1. Quick Start & Setup
 
-### Installation
-1. Clone the repository and navigate to the project directory.
-2. Navigate to the backend directory:
+### Installation & Run
+1. Open your terminal and navigate to the project directory:
    ```bash
-   cd backend
+   cd C:\Users\rayid\OneDrive\Desktop\classroom-companion
    ```
-3. Install all dependencies:
-   ```bash
-   pip install -r ../requirements.txt
-   ```
-   *(Or if using the legacy Node.js server, run `npm install`)*
+2. Activate the virtual environment:
+   * **PowerShell:**
+     ```powershell
+     .\venv\Scripts\Activate.ps1
+     ```
+   * **Command Prompt:**
+     ```cmd
+     venv\Scripts\activate
+     ```
 
-### Configuration (`.env`)
-Create a `.env` file in the `backend/` folder containing:
-```env
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-BOT_USERNAME=your_bot_username
-GEMINI_API_KEY=your_gemini_api_key
-PORT=3001
-NODE_ENV=development
-DB_PATH=./data/classroom.db
-ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:5500,http://localhost:5500,null
-```
-
-### Seeding the Database
-To reset and seed the database with initial demo data, run the seed script:
-```bash
-python scripts/seed.py
-```
-
-### Running the App
+### Running the Backend
 Start the FastAPI server:
 ```bash
-python main.py
+python backend/main.py
+```
+
+### Running the Frontend
+In a **new terminal window**, navigate to the project root and run Python's built-in web server:
+```bash
+cd C:\Users\rayid\OneDrive\Desktop\classroom-companion
+python -m http.server 5500
 ```
 
 ---
@@ -53,12 +45,13 @@ The application is seeded with the following short-login credentials:
 - **Teacher: Ms. Sharma** (URL: `?user=sharma`) - Creates and manages assignments for Grade 8 / Class 9.
 - **Student: Maddy** (URL: `?user=maddy`) - Reviews homework, sends updates to the Telegram bot, and reads feedback comments.
 - **Student: Rahul Verma** (URL: `?user=rahul`) - Views personalized lists of active and overdue tasks.
+- **Student: Srrr** (URL: `?user=Srrr`) - Newly registered student linked to Class 6 via Telegram.
 
 ### Accessing the Web portals:
-Ensure the backend server is running on port `3001` and frontend files are served on port `3000`:
-*   **Admin Console**: [http://localhost:3000/coordinator/index.html?user=mehta](http://localhost:3000/coordinator/index.html?user=mehta)
-*   **Teacher Console**: [http://localhost:3000/teacher/index.html?user=manoj](http://localhost:3000/teacher/index.html?user=manoj)
-*   **Student Console**: [http://localhost:3000/student/index.html?user=maddy](http://localhost:3000/student/index.html?user=maddy)
+Ensure the backend server is running on port `3001` and frontend files are served on port `5500`:
+*   **Admin Console**: [http://localhost:5500/frontend/coordinator/index.html?user=mehta](http://localhost:5500/frontend/coordinator/index.html?user=mehta)
+*   **Teacher Console**: [http://localhost:5500/frontend/teacher/index.html?user=manoj](http://localhost:5500/frontend/teacher/index.html?user=manoj)
+*   **Student Console**: [http://localhost:5500/frontend/student/index.html?user=maddy](http://localhost:5500/frontend/student/index.html?user=maddy)
 
 ---
 
